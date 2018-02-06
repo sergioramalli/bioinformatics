@@ -1,0 +1,1 @@
+class hmmer_rest(object):
