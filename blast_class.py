@@ -1,3 +1,18 @@
+
+class blast_class(object):
+
+    def dbFilter(self, unfiltered_string):
+        """
+        A common database filter function, before inserting items into the database. 
+        this is prevent the addition of white space and any ' (speech marks), that might affect search results 
+
+        :param unfiltered_string: the string you wish to filter 
+        :return: the now filtered string 
+        """
+        return unfiltered_string.lower().replace("'", "").rstrip().lstrip().lower();
+
+    pass;
+
 #!/usr/bin/env python
 # $Id: ncbiblast_urllib2.py 2673 2013-10-26 05:56:18Z hpm $
 # ======================================================================
@@ -33,7 +48,8 @@
 baseUrl = 'http://www.ebi.ac.uk/Tools/services/rest/ncbiblast'
 
 # Load libraries
-import platform, os, re, sys, time, urllib, urllib2, xmltramp
+import platform, os, re, sys, time, urllib
+from urllib.request import urlopen
 from optparse import OptionParser
 
 # Set interval for checking status
@@ -140,7 +156,7 @@ def restRequest(url):
         result = reqH.read()
         reqH.close()
     # Errors are indicated by HTTP status codes.
-    except urllib2.HTTPError, ex:
+    except urllib2.HTTPError as ex:
         # Trap exception and output the document to get error message.
         print >>sys.stderr, ex.read()
         raise
@@ -162,7 +178,7 @@ def printGetParameters():
     printDebugMessage('printGetParameters', 'Begin', 1)
     idList = serviceGetParameters()
     for id in idList:
-        print id
+        print (id)
     printDebugMessage('printGetParameters', 'End', 1)    
 
 # Get input parameter information
@@ -180,17 +196,16 @@ def serviceGetParameterDetails(paramName):
 def printGetParameterDetails(paramName):
     printDebugMessage('printGetParameterDetails', 'Begin', 1)
     doc = serviceGetParameterDetails(paramName)
-    print str(doc.name) + "\t" + str(doc.type)
-    print doc.description
+    print (str(doc.name) + "\t" + str(doc.type))
+    print (doc.description)
     for value in doc.values:
-        print value.value,
+        print (value.value);
         if str(value.defaultValue) == 'true':
-            print 'default',
-        print
-        print "\t" + str(value.label)
+            print ('default')
+        print ("\t" + str(value.label))
         if(hasattr(value, 'properties')):
             for wsProperty in value.properties:
-                print  "\t" + str(wsProperty.key) + "\t" + str(wsProperty.value)
+                print  ("\t" + str(wsProperty.key) + "\t" + str(wsProperty.value))
     #print doc
     printDebugMessage('printGetParameterDetails', 'End', 1)
 
@@ -225,7 +240,7 @@ def serviceRun(email, title, params):
         reqH = urllib2.urlopen(req, requestData)
         jobId = reqH.read()
         reqH.close()
-    except urllib2.HTTPError, ex:
+    except urllib2.HTTPError as ex:
         # Trap exception and output the document to get error message.
         print >>sys.stderr, ex.read()
         raise
@@ -248,7 +263,7 @@ def serviceGetStatus(jobId):
 def printGetStatus(jobId):
     printDebugMessage('printGetStatus', 'Begin', 1)
     status = serviceGetStatus(jobId)
-    print status
+    print (status)
     printDebugMessage('printGetStatus', 'End', 1)
     
 
@@ -268,15 +283,15 @@ def printGetResultTypes(jobId):
     printDebugMessage('printGetResultTypes', 'Begin', 1)
     resultTypeList = serviceGetResultTypes(jobId)
     for resultType in resultTypeList:
-        print resultType['identifier']
+        print (resultType['identifier'])
         if(hasattr(resultType, 'label')):
-            print "\t", resultType['label']
+            print ("\t", resultType['label'])
         if(hasattr(resultType, 'description')):
-            print "\t", resultType['description']
+            print ("\t", resultType['description'])
         if(hasattr(resultType, 'mediaType')):
-            print "\t", resultType['mediaType']
+            print ("\t", resultType['mediaType'])
         if(hasattr(resultType, 'fileSuffix')):
-            print "\t", resultType['fileSuffix']
+            print ("\t", resultType['fileSuffix'])
     printDebugMessage('printGetResultTypes', 'End', 1)
 
 # Get result
@@ -321,7 +336,7 @@ def getResult(jobId):
             fh = open(filename, 'w');
             fh.write(result)
             fh.close()
-            print filename
+            print (filename)
     printDebugMessage('getResult', 'End', 1)
 
 # Read a file
@@ -392,7 +407,7 @@ elif options.email and not options.jobid:
     # Submit the job
     jobid = serviceRun(options.email, options.title, params)
     if options.async: # Async mode
-        print jobid
+        print (jobid)
     else: # Sync mode
         print >>sys.stderr, jobid
         time.sleep(5)

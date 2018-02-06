@@ -3,8 +3,11 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 
 def hello_world(request):
-    import blastclass 
-    return Response('<h1>Hello world!</h1>')
+    
+    # import blast_class 
+    import 
+        
+    return Response('<h1>Hello world!</h1>' + e)
 
 if __name__ == '__main__':
     config = Configurator()
