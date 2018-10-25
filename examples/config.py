@@ -10,7 +10,8 @@ config = {
 	'subject_sequences' : "../genomes/actinobacteria.faa",
 	'subject_db' : "../genomes/blast_db/actinobacteria",
 
-	'query_sequences' : '../queries/NP_414543_1_longer_than_subjects.faa',
+	'query_sequences' : "/home/turingrepublic/Desktop/Thesis_/final/queries/WP_011274277_1.faa",
+	# 'query_sequences' : '../queries/NP_414543_1_longer_than_subjects.faa',
 
 	# for examples only
 	'psi_results' : '../results/actinobacteria/psi_example',

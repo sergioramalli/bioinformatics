@@ -14,9 +14,7 @@ try:
 	pfam = pfam()
 	matched = pfam.construct(json.loads(sequences), config['query_sequences'])
 
-	with open(config['pfam_processed_domains'], "w") as text_file:
-
-		json.dump(matched, text_file)
+	print();
 
 except Exception as e:
 

@@ -2,6 +2,9 @@
 import csv
 import os
 import shutil
+import json
+import sys
+
 from Bio import SeqIO
 
 class local(object):
@@ -13,6 +16,9 @@ class local(object):
 	threads = 4;
 	iterations = 1;
 	subject_db_label = 'subject_db_label'
+	outfmt = 10
+	num_alignments = 1000
+	dbsize = 100000000
 
 	def __str__(self):
 
@@ -26,7 +32,7 @@ class local(object):
 		
 		try:
 
-			os.system("psiblast -query " + self.query + " -db " + self.subject_db_label + " -show_gis -outfmt 10 -num_iterations "+ str(self.iterations) +" -num_threads "+ str(self.threads) +" -num_alignments 1000 -dbsize 100000000 -comp_based_stats F -seg no -out " + self.psi_result );
+			os.system("psiblast -query " + self.query + " -db " + self.subject_db_label + " -show_gis -outfmt " + str(self.outfmt) + " -num_iterations "+ str(self.iterations) +" -num_threads "+ str(self.threads) +" -num_alignments " + str(self.num_alignments) + " -dbsize " + str(self.dbsize) + " -comp_based_stats F -seg no -out " + self.psi_result );
 			
 		except Exception as e:
 
@@ -39,7 +45,7 @@ class local(object):
 		self.query = query
 		return self
 
-	def _matches(self, total = 29):
+	def _matches(self, total = 30):
 
 		try:
 
@@ -48,11 +54,34 @@ class local(object):
 
 			x = 0
 			subjects = []
+			jsonObject = {};
+			jsonObject['blast'] = {'outfmt' : self.outfmt, 'engine' : 'psi-blast', 'query' : self.query, 'db' : self.subject_db_label, 'num_alignments' : self.num_alignments, 'dbsize' : self.dbsize, 'query' : self.query };
+			jsonObject['sequences'] = {};
+
 			for row in reader:
 
 				try:
-					subjects.append( row[1] )
+
+					# create json file here id = blast results 
+					if x == 0:
+
+						subjects.append( row[0] )
+						jsonObject['sequences'][row[0]] = {}
+						jsonObject['sequences'][row[0]]['blast'] = row
+						jsonObject['sequences'][row[0]]['query'] = True
+
+					else: 
+					
+						subjects.append( row[1] )
+						jsonObject['sequences'][row[1]] = {}
+						jsonObject['sequences'][row[1]]['blast'] = row
+						jsonObject['sequences'][row[1]]['query'] = False
+
+					if x >= total:
+						break;
+
 				except Exception as e:
+
 					pass
 				
 				x += 1
@@ -61,29 +90,41 @@ class local(object):
 
 			subjects_full = []
 			ids = []
-
 			x = 0
 			for record in SeqIO.parse(self.query, "fasta"):
 
 				ids.append(record.id)
 				subjects_full.append(record)
 
+				jsonObject['sequences'][record.id]['sequence'] = str(record.seq); 
+				jsonObject['sequences'][record.id]['description'] = record.description; 
+				jsonObject['sequences'][record.id]['name'] = record.name; 
+
 			for record in SeqIO.parse(self.subject_sequences, "fasta"):
 
 				if record.id in subjects:
 
 					if record.id not in ids:
+
+						# append the sequence, name, description and seq information here to the json object from above 
+						jsonObject['sequences'][record.id]['sequence'] = str(record.seq); 
+						jsonObject['sequences'][record.id]['description'] = record.description; 
+						jsonObject['sequences'][record.id]['name'] = record.name; 
 						subjects_full.append(record)
 						ids.append(record.id)
 						x += 1
-						if x > total:
+						if x >= total:
 							break
+
 
 		except Exception as e:
 
 			raise(e)
 
 		try:
+
+			with open(self.psi_json, 'w') as outfile:
+				json.dump(jsonObject, outfile)
 
 			SeqIO.write(subjects_full, self.psi_fasta, "fasta")
 
@@ -127,6 +168,7 @@ class local(object):
 			os.makedirs(os.path.dirname(output), exist_ok=True)
 			self.psi_result = output
 			self.psi_fasta  = output + ".fasta"
+			self.psi_json  = output + "_blast.json"
 
 			self._set_query(query)._run_psi()
 
@@ -137,7 +179,7 @@ class local(object):
 
 		try:
 
-			self._matches()
+			self._matches(total)
 			return self.psi_fasta
 			pass
 

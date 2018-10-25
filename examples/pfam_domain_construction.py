@@ -13,38 +13,16 @@ from_existing_db = True
 
 try:
 
-	blast = blast.local()
-	blast.threads = config['threads']
-	blast.iterations : config['iterations']
-	
-	# runs psiblast operation, and returns name of fasta file with Hits plus query 
-	fasta = blast.set_db(config['subject_db'], config['subject_sequences']).run(config['query_sequences'], config['psi_results'], 20)
-
-	print('Blast Finished')
-
-	with open(config['psi_results_fasta'], 'r') as myfile:
-		sequences = myfile.read()
-
 	pfam = pfam()
-	result = pfam.setEvalue('0.1').setSequence(sequences).submitSequence('iuriramalli@hotmail.com', 'api test')
-	result = pfam.retrieve()['out']
+	result = pfam.setEvalue('0.1').setSequence(config['psi_results_fasta']).submitSequence('iuriramalli@hotmail.com', 'api test')
+	# pfam.job_id = "pfamscan-R20181025-110658-0662-22547843-p1m"
 
-	with open(config['pfam_domains'], "w") as text_file:
+	result = pfam.retrieve("out")
+	matched = pfam.construct(config['psi_results'] + "_blast.json")
 
-		text_file.write(result)
+	with open(config['psi_results'] + "_blast.json", 'w') as outfile:
+		json.dump(matched, outfile)
 
-	print('Pfam Finished');
-
-	with open(config['pfam_domains'], 'r') as myfile:
-		sequences = myfile.read()
-
-	matched = pfam.construct(json.loads(sequences), config['query_sequences'])
-
-	with open(config['pfam_processed_domains'], "w") as text_file:
-
-		json.dump(matched, text_file)
-
-	print('Domain matching finished')
 
 except Exception as e:
 

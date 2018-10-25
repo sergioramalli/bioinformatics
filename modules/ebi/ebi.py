@@ -307,7 +307,10 @@ class pfam(ebi):
 		self.e_value = e_value
 		return self
 
-	def setSequence(self, sequence):
+	def setSequence(self, file):
+
+		with open(file, 'r') as myfile:
+			sequence = myfile.read()
 
 		self.sequence = sequence
 		return self
@@ -330,35 +333,39 @@ class pfam(ebi):
 		self.job_id = self.serviceRun(email, title, params)
 		return self
 
-	def retrieve(self):
+	def retrieve(self, output = 'out'):
 
-		return self.getResult(self.job_id)
+		result = self.getResult(self.job_id)
+		if output == 'out':
+			self.results =  result['out'];
+		else:
+			self.results = result;
 
+	def jaccard_similarity(self, list1, list2):
+		intersection = len(list(set(list1).intersection(list2)))
+		union = (len(list1) + len(list2)) - intersection
+		return float(intersection / union)
 
-	def construct(self, data, query_sequences):
+	def construct(self, file):
 
 		try:
 
-			for record in SeqIO.parse(query_sequences, "fasta"):
-
-				query_id = record.id
-				# query_id = query_id.replace(".", "_")
-				break
-
 			family = {}
-			for x in data:
+			unique_domains = {}
+			for x in json.loads(self.results):
 
-				key = x['seq']['name']
+				name = x['seq']['name']
+				unique_domains[x['acc']] = x['acc']
 
-				if x['seq']['name'] in family:
+				if name in family:
 
-					family[x['seq']['name']].update( 
-						{len(family[x['seq']['name']]) : {'to' : x['seq']['to'], 'from' : x['seq']['from'], 'type' : x['type'], 'fname' : x['name'], 'desc' : x['desc'], 'domain' : x['acc'] } 
+					family[name].update( 
+						{len(family[name]) : {'to' : x['seq']['to'], 'from' : x['seq']['from'], 'type' : x['type'], 'fname' : x['name'], 'desc' : x['desc'], 'domain' : x['acc'] } 
 					} )
 
 				else:
 
-					family.update({ x['seq']['name'] : 
+					family.update({ name : 
 						{0 : {'to' : x['seq']['to'], 'from' : x['seq']['from'], 'type' : x['type'], 'fname' : x['name'], 'desc' : x['desc'], 'domain' : x['acc'] } 
 					}})
 
@@ -378,17 +385,36 @@ class pfam(ebi):
 
 				family[key].update({'domains' : domains})
 
-			main_domains_seq = family[query_id]['domains']	
+			with open(file, 'r') as myfile:
 
-			matched = {}
-			for key, value in family.items():
+				sequences = json.load(myfile)
+				sequences['pfam'] = {'job_id' : self.job_id, 'unique_domains' : unique_domains};
 
-				if main_domains_seq == value['domains']:
+				for key, value in family.items():
 
-					matched.update( {key : value} )
+					if key in sequences['sequences']:
+						sequences['sequences'][key]['pfam'] = value;
 
+			x = 0
+			for key, value in sequences['sequences'].items():
+
+
+				if x == 0:
+
+					query_sequence = set(value['pfam']['domains'].split(','));
+					score = 1;
+
+				else : 
+
+					subject_sequence = set(value['pfam']['domains'].split(','));
+					score = self.jaccard_similarity(query_sequence, subject_sequence)
+
+				sequences['sequences'][key]['pfam']['jaccard_similarity'] = score;
+
+				x += 1;
 				pass
-			pass
+
+			return sequences
 
 		except Exception as e:
 
@@ -396,11 +422,6 @@ class pfam(ebi):
 			fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 			print(e, '\n', exc_type, fname, exc_tb.tb_lineno)
 			os._exit(0)
-
-
-
-
-		return matched
 
 
 class blast(ebi):
