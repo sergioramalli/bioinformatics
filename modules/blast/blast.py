@@ -7,6 +7,14 @@ import sys
 
 from Bio import SeqIO
 
+def exp(e):
+	
+	exc_type, exc_obj, exc_tb = sys.exc_info()
+	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+	print(e, exc_type, fname, exc_tb.tb_lineno)
+	os._exit(0)
+
+
 class local(object):
 
 	directory = '';
@@ -119,7 +127,7 @@ class local(object):
 
 		except Exception as e:
 
-			raise(e)
+			exp(e)
 
 		try:
 
@@ -130,7 +138,7 @@ class local(object):
 
 		except Exception as e:
 
-			raise(e)
+			exp(e)
 
 		return self
 
@@ -165,10 +173,11 @@ class local(object):
 
 		try:
 
-			os.makedirs(os.path.dirname(output), exist_ok=True)
-			self.psi_result = output
-			self.psi_fasta  = output + ".fasta"
-			self.psi_json  = output + "_blast.json"
+			os.makedirs(os.path.dirname(output['blast']), exist_ok=True)
+
+			self.psi_result = output['blast_csv']
+			self.psi_fasta  = output['blast_fasta']
+			self.psi_json  = output['blast_json']
 
 			self._set_query(query)._run_psi()
 

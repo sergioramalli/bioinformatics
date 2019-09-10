@@ -144,6 +144,7 @@ class ebi():
 				req = Request(requestUrl, None, http_headers)
 				# Make the submission (HTTP POST).
 
+				print(requestUrl)
 				reqH = urlopen(req, requestData.encode(encoding=u'utf_8', errors=u'strict'))
 				jobId = unicode(reqH.read(), u'utf-8')
 				reqH.close()
@@ -308,6 +309,7 @@ class pfam(ebi):
 		return self
 
 	def setSequence(self, file):
+
 
 		with open(file, 'r') as myfile:
 			sequence = myfile.read()

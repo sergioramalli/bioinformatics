@@ -1,5 +1,6 @@
 genomes/
 results/
+modules/interproscan/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

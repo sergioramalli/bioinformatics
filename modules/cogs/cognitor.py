@@ -19,8 +19,8 @@ class cogs(object):
 	def __init__(self, directory, output = 'result.GOG.csv', reset = 'reset'):
 
 		super(cogs, self).__init__()
-		self.output = output
 		self.directory = directory
+		self.output = output
 		self._createDirectory(reset);
 
 	def _createDirectory(self, reset = 'reset'):
@@ -118,9 +118,11 @@ class cogs(object):
 			self.cogs = {'sequences' : sequences, 'csv' : csv, 'db' : self.directory + 'COGs'}
 
 		else:
+
 			self.cogs = {'sequences' : sequences, 'csv' : csv, 'db' : db}
 
 		if createDb == True:
+			
 			self._cogsDb();
 
 
