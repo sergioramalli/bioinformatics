@@ -4,54 +4,60 @@ import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from auth import process
 
-
+process = process();
 
 with open(output_files['kmeans_model_2'], 'rb') as f:
 	km = pickle.load(f)
 
-val = km.labels_
+file = open(output_files['analysis'], "r")
+data = json.load(file)
 
-print(val);
+clusters = km.labels_
 
-# num = 0
-# for x in val:
+x = 0; 
+for key, value in data.items():
 
-# 	# print(x);
-# 	num += 1
-# 	if num > 400:
-# 		break;
-# 	pass
+	data[key]['cluster'] = int(clusters[value['key']])
+	x += 1
 
+with open(output_files['analysis'], 'w') as outfile:
+	json.dump(data, outfile, indent=4)
 
+cl = {}
+for key, value in data.items():
 
-# plt.scatter(data[:,0],data[:,1], label='True Position')
+	if value['key'] == 0:
+		cluster = value['cluster']
+		cogs = value['cogs']['cog_id']
 
-# for x in data:
+	if value['cluster'] == cluster:
 
-# 	predict_me = np.array(x)
-# 	predict_me = predict_me.reshape(-1, len(predict_me))
-# 	prediction = km.predict(predict_me)
-# 	print(prediction, x)
-# 	break;
-# 	pass
+		cl[key] = value
 
-# I need orignal query. -> fasta file 
-# I need blast query which includes query sequence. -> fasta file. 
-# I need json file with the pfam domains, blast scores and cog id. -> this becomes the main file. 
-# I need the CSV file with the distance scores. 
+	pass
 
-# Then i need to find which cluster my orignal query belongs in
+maxDomains = process.getMaxDomain(data);
 
-# note also only looking at top domain hits, and not taking into account gaps
+total = 0
+for query, domains1 in cl.items():
 
+	for hit, domains2 in cl.items():
 
-# query (actinobacteria) -> psi-blast -> pfam_construct -> get cogs -> process -> scoring function -> cluster analysis -> annotate
+		total += process.js_score(domains1['pfam'], domains2['pfam'], maxDomains);
 
-# psi_blast json file. <-- arrives from psi blast output and modifies files. 
-# then outputs to json file. 
+	break;
 
-# Next steps do same process in psi-blast file
-# Next steps do same process in pfam file. 
+print(round(total / len(cl), 5));
 
-# installer to install all packages. 
+total = 0
+for query, domains1 in data.items():
+
+	for hit, domains2 in data.items():
+
+		total += process.js_score(domains1['pfam'], domains2['pfam'], maxDomains);
+
+	break;
+
+print(round(total / len(data), 5) );

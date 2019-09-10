@@ -26,11 +26,6 @@ for query, domains1 in data.items():
 		sc = process.domain_similarity(domains1['pfam'], domains2['pfam'], maxDomains);
 		js = process.js_score(domains1['pfam'], domains2['pfam'], maxDomains);
 		cog = process.cogs(domains1['cogs'], domains2['cogs']);
-
-		if domains1['key'] ==  domains2['key']:
-
-			continue;
-
 		x += 1
 		ob[x] = {'query' : domains1['key'], 'hit' : domains2['key'], 'score' : sc, 'js' : js, 'cog' : cog}
 
@@ -39,11 +34,11 @@ for query, domains1 in data.items():
 with open(output_files['distant_score_csv_2'], 'w') as csvfile:
 
 	filewriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-	filewriter.writerow([ 'JS', 'Score',  'Distance', 'cog'])
+	filewriter.writerow([ 'JS', 'Score', 'cog', 'Distance'])
 	
 	for key, value in ob.items():
 
-		filewriter.writerow([ value['js'], value['score'], process.highest_score - value['score'], value['cog'] ])
+		filewriter.writerow([ value['js'], value['score'], value['cog'], process.highest_score - value['score'] ])
 
 csv = pd.read_csv(output_files['distant_score_csv_2'])
 X = np.array(csv)
@@ -60,13 +55,13 @@ x = range(1, len(ssd)+1)
 kn = KneeLocator(x, ssd, curve='convex', direction='decreasing',  S=1.0)
 clusters = kn.knee
 
-# plt.plot(K, ssd, 'bx-')
-# plt.xlabel('k')
-# plt.ylabel('Sum_of_squared_distances')
-# plt.title('Elbow Method For Optimal k')
-# plt.show()
+plt.plot(K, ssd, 'bx-')
+plt.xlabel('k')
+plt.ylabel('Sum_of_squared_distances')
+plt.title('Elbow Method For Optimal k')
+plt.show()
 
-kmeans = KMeans(n_clusters=clusters)
+kmeans = KMeans(n_clusters=3)
 kmeans.fit(X)
 
 # It is important to use binary access

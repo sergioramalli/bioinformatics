@@ -79,6 +79,10 @@ class process(object):
 
 	    intersection = len(list(set(list1).intersection(list2)))
 	    union = (len(list1) + len(list2)) - intersection
+
+	    if union == 0:
+	    	return intersection;
+
 	    return float(float(intersection) / float(union))
 
 	def js_score(self, domains1, domains2, maxDomains):

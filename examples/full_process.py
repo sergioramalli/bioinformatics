@@ -9,123 +9,123 @@ from auth import process
 import blast.blast as blast
 from cogs.cognitor import cogs
 
-try:
+# try:
 
-	# ensure folder is deleted first as it affects results
+# 	# ensure folder is deleted first as it affects results
 
-	blast = blast.local()
-	blast.threads = config['threads']
-	blast.iterations : config['iterations']
+# 	blast = blast.local()
+# 	blast.threads = config['threads']
+# 	blast.iterations : config['iterations']
 
-	if config['from_existing_db'] != True:
+# 	if config['from_existing_db'] != True:
 
-		# runs psiblast operation, spins out new subject database and returns name of fasta file with hits plus query
-		fasta = blast.make_db(system_config['subject_db'], system_config['subject_sequences']).run(config['query'], output_files, config['hits'])
+# 		# runs psiblast operation, spins out new subject database and returns name of fasta file with hits plus query
+# 		fasta = blast.make_db(system_config['subject_db'], system_config['subject_sequences']).run(config['query'], output_files, config['hits'])
 
-	else:
+# 	else:
 
-		# runs psiblast operation, and returns name of fasta file with Hits plus query 
-		fasta = blast.set_db(system_config['subject_db'], system_config['subject_sequences']).run(config['query'], output_files, config['hits'])
+# 		# runs psiblast operation, and returns name of fasta file with Hits plus query 
+# 		fasta = blast.set_db(system_config['subject_db'], system_config['subject_sequences']).run(config['query'], output_files, config['hits'])
 
-	results = {}
-	with open(output_files['blast_json'], 'r') as myfile:
+# 	results = {}
+# 	with open(output_files['blast_json'], 'r') as myfile:
 
-		for key, value in json.load(myfile)['sequences'].items():
+# 		for key, value in json.load(myfile)['sequences'].items():
 
-			sID = hashlib.md5(key.encode('utf-8')).hexdigest()
-			results[sID] = {'blast' : {'id' : key, 'e-value': value['blast'][10], 'score' : value['blast'][11], 'sequence' : value['sequence'] }}
+# 			sID = hashlib.md5(key.encode('utf-8')).hexdigest()
+# 			results[sID] = {'blast' : {'id' : key, 'e-value': value['blast'][10], 'score' : value['blast'][11], 'sequence' : value['sequence'] }}
 
-			pass
+# 			pass
 
-		pass
+# 		pass
 
-	with open(output_files['blast_json'], 'w') as the_file:
-	    the_file.write(json.dumps(results))
+# 	with open(output_files['blast_json'], 'w') as the_file:
+# 	    the_file.write(json.dumps(results))
 
-except Exception as e:
+# except Exception as e:
 
-	exc_type, exc_obj, exc_tb = sys.exc_info()
-	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-	print(e, exc_type, fname, exc_tb.tb_lineno)
-	os._exit(0)
+# 	exc_type, exc_obj, exc_tb = sys.exc_info()
+# 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+# 	print(e, exc_type, fname, exc_tb.tb_lineno)
+# 	os._exit(0)
 
-try:
+# try:
 
-	os.makedirs(output_files['interscan'], exist_ok=True)
-	os.system("../modules/interproscan/interproscan.sh -appl Pfam-32.0 -i " + output_files['blast_fasta'] + " -f json -f tsv -b " + output_files['interscan_pfam'] + " -iprlookup false -dra false");
+# 	os.makedirs(output_files['interscan'], exist_ok=True)
+# 	os.system("../modules/interproscan/interproscan.sh -appl Pfam-32.0 -i " + output_files['blast_fasta'] + " -f json -f tsv -b " + output_files['interscan_pfam'] + " -iprlookup false -dra false");
 
-	with open(output_files['interscan_pfam_json'], 'r') as myfile:
+# 	with open(output_files['interscan_pfam_json'], 'r') as myfile:
 
-		domains = {};
-		reader = json.load(myfile)
-		for x in reader['results']:
+# 		domains = {};
+# 		reader = json.load(myfile)
+# 		for x in reader['results']:
 
-			sID = hashlib.md5(x['xref'][0]['id'].encode('utf-8')).hexdigest()
-			domains[sID] = {'start' : 0, 'end' : 0, 'info' : {}, 'sequence' : x['sequence'], 'domains' : [ ]}
-			pass
+# 			sID = hashlib.md5(x['xref'][0]['id'].encode('utf-8')).hexdigest()
+# 			domains[sID] = {'start' : 0, 'end' : 0, 'info' : {}, 'sequence' : x['sequence'], 'domains' : [ ]}
+# 			pass
 
-		for x in reader['results']:
+# 		for x in reader['results']:
 
-			sID = hashlib.md5(x['xref'][0]['id'].encode('utf-8')).hexdigest()
+# 			sID = hashlib.md5(x['xref'][0]['id'].encode('utf-8')).hexdigest()
 
-			for xx in x['matches']:
+# 			for xx in x['matches']:
 
-				if domains[sID]['end'] >  xx['locations'][0]['start']:
+# 				if domains[sID]['end'] >  xx['locations'][0]['start']:
 
-					pass;
+# 					pass;
 
-				else:	
+# 				else:	
 
-					domains[sID]['domains'].append(xx['signature']['accession']) 
-					domains[sID]['info'][xx['signature']['accession']] = {'evalue' : xx['locations'][0]['evalue'], 'score' : xx['locations'][0]['score'], 'start' : xx['locations'][0]['start'], 'end' : xx['locations'][0]['end']}
+# 					domains[sID]['domains'].append(xx['signature']['accession']) 
+# 					domains[sID]['info'][xx['signature']['accession']] = {'evalue' : xx['locations'][0]['evalue'], 'score' : xx['locations'][0]['score'], 'start' : xx['locations'][0]['start'], 'end' : xx['locations'][0]['end']}
 
-				domains[sID]['start'] = xx['locations'][0]['start']
-				domains[sID]['end'] = xx['locations'][0]['end']
+# 				domains[sID]['start'] = xx['locations'][0]['start']
+# 				domains[sID]['end'] = xx['locations'][0]['end']
 
-			pass
-
-
-		query = domains[list(domains.keys())[0]]
-
-	for key, value in domains.items():
-
-		domains[key].pop('end', None)
-		domains[key].pop('start', None)  
-
-	with open(output_files['blast_json'], 'r') as the_file:
-
-		reader = json.load(the_file)
-		for key, value in domains.items():
-
-			if key in reader:
-				reader[key]['pfam'] = value;
-			else:
-				print(key);
+# 			pass
 
 
-	with open(output_files['interscan_pfam_json'], 'w') as the_file:
-	    the_file.write(json.dumps(reader, indent=4))
+# 		query = domains[list(domains.keys())[0]]
 
-except Exception as e:
+# 	for key, value in domains.items():
 
-	exc_type, exc_obj, exc_tb = sys.exc_info()
-	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-	print(e, exc_type, fname, exc_tb.tb_lineno)
-	os._exit(0)
+# 		domains[key].pop('end', None)
+# 		domains[key].pop('start', None)  
+
+# 	with open(output_files['blast_json'], 'r') as the_file:
+
+# 		reader = json.load(the_file)
+# 		for key, value in domains.items():
+
+# 			if key in reader:
+# 				reader[key]['pfam'] = value;
+# 			else:
+# 				print(key);
 
 
-# Sets-up the class and creates a directory for all the temp files. 
-cogs = cogs(output_files['cogs'], output_files['cogs_csv']);
-cogs.threads = config['threads'];
+# 	with open(output_files['interscan_pfam_json'], 'w') as the_file:
+# 	    the_file.write(json.dumps(reader, indent=4))
 
- # query sequence you want to check against  
-cogs.setQuery(output_files['blast_fasta']);
+# except Exception as e:
 
-# sets and/or creates the database of sequences to run your analysis against. 
-cogs.setCogs(system_config['cogs_fasta'], system_config['cogs_p2o'], system_config['cogs_genomes_cogs'], config['create_cogs_db']);
+# 	exc_type, exc_obj, exc_tb = sys.exc_info()
+# 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+# 	print(e, exc_type, fname, exc_tb.tb_lineno)
+# 	os._exit(0)
 
-# starts analysis 
-cogs.cognitor();
+
+# # Sets-up the class and creates a directory for all the temp files. 
+# cogs = cogs(output_files['cogs'], output_files['cogs_csv']);
+# cogs.threads = config['threads'];
+
+#  # query sequence you want to check against  
+# cogs.setQuery(output_files['blast_fasta']);
+
+# # sets and/or creates the database of sequences to run your analysis against. 
+# cogs.setCogs(system_config['cogs_fasta'], system_config['cogs_p2o'], system_config['cogs_genomes_cogs'], config['create_cogs_db']);
+
+# # starts analysis 
+# cogs.cognitor();
 
 with open(output_files['interscan_pfam_json'], 'r') as myfile:
 
