@@ -5,11 +5,13 @@ sys.path.insert(0, str(Path(__file__).parents[1]) + '/modules/')
 config = {
 		
 	# unique identify for the job 
-	'job_name' : 'NP_414543_1_2000hits',
+	# 'job_name' : 'NP_414543_1_90_hits',
+	'job_name' : '9_90',
 
 	# 'query' : "/home/turingrepublic/Desktop/Thesis_/final/queries/WP_011274277_1.faa",
 	# 'query' : '../queries/A0A2D5C7R1_9ACTN.fasta',
-	'query' : '../queries/NP_414543_1_longer_than_subjects.faa',
+	# 'query' : '../queries/NP_414543_1_longer_than_subjects.faa',
+	'query' : '../queries/9actn.fasta',
 
 	# the name of the output file. 
 	'result_directory' : 'results/',
@@ -24,10 +26,10 @@ config = {
 	'threads' : 12,
 
 	# how many iterations to use in psi-blast. 
-	'iterations' : 6,
+	'iterations' : 2,
 
 	# how many hits you want back from psi-blast
-	'hits' : 2000
+	'hits' : 90
 
 }
 

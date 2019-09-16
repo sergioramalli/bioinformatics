@@ -30,12 +30,12 @@ for key, value in data.items():
 
 	if value['key'] == 0:
 		cluster = value['cluster']
-		cogs = value['cogs']['cog_id']
 
 	if value['cluster'] == cluster:
 
 		cl[key] = value
 
+	print(value['cluster']);
 	pass
 
 maxDomains = process.getMaxDomain(data);
